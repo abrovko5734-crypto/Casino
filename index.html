@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ruina Casino</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --card-bg: #121218;
+            --accent: #ff3366;
+            --ton-color: #0088cc;
+            --stars-color: #ffcc00;
+            --text-main: #ffffff;
+            --text-secondary: #999999;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Шапка с балансом */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .user-info { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+        .stats-top { display: flex; gap: 15px; }
+        .stat-item { display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: bold; }
+
+        /* Баннер бонусов */
+        .promo-container {
+            padding: 10px 15px;
+        }
+
+        .promo-banner {
+            background: linear-gradient(135deg, #1a4d2e 0%, #0d2617 100%);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #2d5a3d;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .promo-banner h2 { margin: 0; font-size: 18px; color: #fff; }
+        .promo-grid { display: flex; gap: 10px; margin-top: 15px; }
+        .promo-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 10px;
+            flex: 1;
+            font-size: 12px;
+        }
+        .promo-card span { display: block; font-size: 16px; font-weight: 800; margin-top: 5px; }
+
+        /* Сетка игр */
+        .section-title {
+            padding: 10px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            gap: 10px;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 0 15px 100px 15px;
+        }
+
+        .game-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 15px;
+            position: relative;
+            border: 1px solid #222;
+            transition: 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .game-card:active { transform: scale(0.96); }
+
+        .game-img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 10px rgba(255, 51, 102, 0.3));
+        }
+
+        .game-name { font-weight: 800; font-size: 16px; text-transform: uppercase; }
+        .game-online { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+        
+        .currency-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            display: flex;
+            gap: 4px;
+        }
+
+        /* Нижнее меню */
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 70px;
+            background: #111;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #222;
+            z-index: 1000;
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 10px;
+            text-decoration: none;
+        }
+        .tab-item.active { color: var(--accent); }
+        .tab-icon { font-size: 20px; margin-bottom: 4px; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="user-info">
+            <img src="https://via.placeholder.com/24" style="border-radius: 50%;"> 
+            <span>UQB6Azh...Eh</span>
+        </div>
+        <div class="stats-top">
+            <div class="stat-item">👥 14</div>
+            <div class="stat-item" style="color: var(--ton-color);">💎 <span id="ton-display">0.1</span></div>
+            <div class="stat-item" style="color: var(--stars-color);">⭐ <span id="stars-display">10</span></div>
+        </div>
+    </div>
+
+    <!-- Promo Banner -->
+    <div class="promo-container">
+        <div class="promo-banner">
+            <h2>БОНУС ЗА ДЕПОЗИТ</h2>
+            <div class="promo-grid">
+                <div class="promo-card">До 10 TON<span>+0.4 TON</span></div>
+                <div class="promo-card">От 10 TON<span>+1.0 TON</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">Игры</div>
+
+    <!-- Games -->
+    <div class="games-grid">
+        <div class="game-card" onclick="play('Crash')">
+            <div class="currency-badge">💎⭐</div>
+            <div class="game-img">🚀</div>
+            <div class="game-name">Crash</div>
+            <div class="game-online">12 играют</div>
+        </div>
+
+        <div class="game-card" onclick="play('Bombs')">
+            <div class="currency-badge">💎⭐</div>
+            <div class="game-img">💣</div>
+            <div class="game-name">Bombs</div>
+            <div class="game-online">8 играют</div>
+        </div>
+
+        <div class="game-card" onclick="play('Plinko')">
+            <div class="currency-badge">💎⭐</div>
+            <div class="game-img">🎾</div>
+            <div class="game-name">Plinko</div>
+            <div class="game-online">6 играют</div>
+        </div>
+
+        <div class="game-card" onclick="play('Wheel')">
+            <div class="currency-badge">💎⭐</div>
+            <div class="game-img">🎡</div>
+            <div class="game-name">Wheel</div>
+            <div class="game-online">10 играют</div>
+        </div>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+        <a href="#" class="tab-item active"><div class="tab-icon">🏠</div>ГЛАВНАЯ</a>
+        <a href="#" class="tab-item"><div class="tab-icon">🎯</div>ИГРЫ</a>
+        <a href="#" class="tab-item"><div class="tab-icon">💰</div>ДЕПОЗИТ</a>
+        <a href="#" class="tab-item"><div class="tab-icon">👤</div>ПРОФИЛЬ</a>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.setHeaderColor('#000000');
+
+        function play(game) {
+            tg.HapticFeedback.impactOccurred('medium');
+            tg.showPopup({
+                title: game,
+                message: `Начать игру в ${game}? Ставка от 0.1 TON или 10 Stars`,
+                buttons: [{id: 'ok', type: 'default', text: 'Играть'}, {type: 'cancel'}]
+            });
+        }
+    </script>
+</body>
+</html>
