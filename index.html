@@ -1,229 +1,194 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ruina Casino</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Ruina Pro</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root {
-            --bg-color: #050505;
-            --card-bg: #121218;
-            --accent: #ff3366;
-            --ton-color: #0088cc;
-            --stars-color: #ffcc00;
-            --text-main: #ffffff;
-            --text-secondary: #999999;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-        }
-
-        /* Шапка с балансом */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .user-info { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
-        .stats-top { display: flex; gap: 15px; }
-        .stat-item { display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: bold; }
-
-        /* Баннер бонусов */
-        .promo-container {
-            padding: 10px 15px;
-        }
-
-        .promo-banner {
-            background: linear-gradient(135deg, #1a4d2e 0%, #0d2617 100%);
-            border-radius: 20px;
-            padding: 20px;
-            text-align: center;
-            border: 1px solid #2d5a3d;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .promo-banner h2 { margin: 0; font-size: 18px; color: #fff; }
-        .promo-grid { display: flex; gap: 10px; margin-top: 15px; }
-        .promo-card {
-            background: rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 10px;
-            flex: 1;
-            font-size: 12px;
-        }
-        .promo-card span { display: block; font-size: 16px; font-weight: 800; margin-top: 5px; }
-
-        /* Сетка игр */
-        .section-title {
-            padding: 10px 20px;
-            font-size: 18px;
-            font-weight: bold;
-            display: flex;
-            gap: 10px;
-        }
-
-        .games-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            padding: 0 15px 100px 15px;
-        }
-
-        .game-card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 15px;
-            position: relative;
-            border: 1px solid #222;
-            transition: 0.2s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow: hidden;
-        }
-
-        .game-card:active { transform: scale(0.96); }
-
-        .game-img {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 10px;
-            filter: drop-shadow(0 0 10px rgba(255, 51, 102, 0.3));
-        }
-
-        .game-name { font-weight: 800; font-size: 16px; text-transform: uppercase; }
-        .game-online { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+        :root { --accent: #00ff88; --bg: #0a0a0c; --card: #16161a; }
+        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         
-        .currency-badge {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            display: flex;
-            gap: 4px;
+        .header { padding: 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); }
+        .balance-box { display: flex; gap: 10px; }
+        .balance { background: var(--card); padding: 8px 15px; border-radius: 12px; border: 1px solid #333; font-weight: bold; }
+        
+        .game-container { padding: 20px; display: none; }
+        .game-active { display: block; }
+        
+        /* Меню выбора игр */
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
+        .game-card { 
+            background: var(--card); border-radius: 20px; padding: 20px; text-align: center;
+            border: 1px solid #222; transition: 0.3s; cursor: pointer;
         }
+        .game-card:hover { border-color: var(--accent); transform: translateY(-5px); }
+        .game-card i { font-size: 40px; display: block; margin-bottom: 10px; }
 
-        /* Нижнее меню */
-        .tab-bar {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            height: 70px;
-            background: #111;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            border-top: 1px solid #222;
-            z-index: 1000;
-        }
+        /* Crash UI */
+        #crash-chart { width: 100%; height: 200px; background: #000; border-radius: 15px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .multiplier { font-size: 48px; font-weight: 900; color: var(--accent); }
 
-        .tab-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--text-secondary);
-            font-size: 10px;
-            text-decoration: none;
-        }
-        .tab-item.active { color: var(--accent); }
-        .tab-icon { font-size: 20px; margin-bottom: 4px; }
+        /* Mines UI */
+        .mines-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 20px; }
+        .cell { width: 100%; aspect-ratio: 1; background: #222; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .cell.open { background: var(--accent); color: #000; }
+        .cell.bomb { background: #ff3366; }
 
+        .btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: bold; margin-top: 15px; cursor: pointer; }
+        .btn-primary { background: var(--accent); color: #000; }
+        
+        .back-btn { background: none; color: #777; border: none; margin-bottom: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <!-- Header -->
+<div id="main-menu">
     <div class="header">
-        <div class="user-info">
-            <img src="https://via.placeholder.com/24" style="border-radius: 50%;"> 
-            <span>UQB6Azh...Eh</span>
-        </div>
-        <div class="stats-top">
-            <div class="stat-item">👥 14</div>
-            <div class="stat-item" style="color: var(--ton-color);">💎 <span id="ton-display">0.1</span></div>
-            <div class="stat-item" style="color: var(--stars-color);">⭐ <span id="stars-display">10</span></div>
+        <div style="font-weight: 900; letter-spacing: 1px;">RUINA <span style="color:var(--accent)">CASINO</span></div>
+        <div class="balance-box">
+            <div class="balance" style="color:#ffcc00">⭐ <span id="stars-val">...</span></div>
+            <div class="balance" style="color:#0088cc">💎 <span id="ton-val">...</span></div>
         </div>
     </div>
 
-    <!-- Promo Banner -->
-    <div class="promo-container">
-        <div class="promo-banner">
-            <h2>БОНУС ЗА ДЕПОЗИТ</h2>
-            <div class="promo-grid">
-                <div class="promo-card">До 10 TON<span>+0.4 TON</span></div>
-                <div class="promo-card">От 10 TON<span>+1.0 TON</span></div>
-            </div>
-        </div>
+    <div class="menu-grid">
+        <div class="game-card" onclick="openGame('crash')"><i>🚀</i><b>CRASH</b><br><small>До x100.00</small></div>
+        <div class="game-card" onclick="openGame('mines')"><i>💣</i><b>MINES</b><br><small>Найди алмазы</small></div>
+        <div class="game-card"><i>🎡</i><b>WHEEL</b><br><small>Скоро</small></div>
+        <div class="game-card"><i>🎾</i><b>PLINKO</b><br><small>Скоро</small></div>
     </div>
+</div>
 
-    <div class="section-title">Игры</div>
-
-    <!-- Games -->
-    <div class="games-grid">
-        <div class="game-card" onclick="play('Crash')">
-            <div class="currency-badge">💎⭐</div>
-            <div class="game-img">🚀</div>
-            <div class="game-name">Crash</div>
-            <div class="game-online">12 играют</div>
-        </div>
-
-        <div class="game-card" onclick="play('Bombs')">
-            <div class="currency-badge">💎⭐</div>
-            <div class="game-img">💣</div>
-            <div class="game-name">Bombs</div>
-            <div class="game-online">8 играют</div>
-        </div>
-
-        <div class="game-card" onclick="play('Plinko')">
-            <div class="currency-badge">💎⭐</div>
-            <div class="game-img">🎾</div>
-            <div class="game-name">Plinko</div>
-            <div class="game-online">6 играют</div>
-        </div>
-
-        <div class="game-card" onclick="play('Wheel')">
-            <div class="currency-badge">💎⭐</div>
-            <div class="game-img">🎡</div>
-            <div class="game-name">Wheel</div>
-            <div class="game-online">10 играют</div>
-        </div>
+<div id="game-crash" class="game-container">
+    <button class="back-btn" onclick="closeGame()">← Назад</button>
+    <div id="crash-chart">
+        <div class="multiplier" id="crash-mult">1.00x</div>
     </div>
-
-    <!-- Tab Bar -->
-    <div class="tab-bar">
-        <a href="#" class="tab-item active"><div class="tab-icon">🏠</div>ГЛАВНАЯ</a>
-        <a href="#" class="tab-item"><div class="tab-icon">🎯</div>ИГРЫ</a>
-        <a href="#" class="tab-item"><div class="tab-icon">💰</div>ДЕПОЗИТ</a>
-        <a href="#" class="tab-item"><div class="tab-icon">👤</div>ПРОФИЛЬ</a>
+    <div style="margin-top:20px">
+        Ставка: 10 Stars
+        <button id="crash-btn" class="btn btn-primary" onclick="startCrash()">ИГРАТЬ</button>
     </div>
+</div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.setHeaderColor('#000000');
+<div id="game-mines" class="game-container">
+    <button class="back-btn" onclick="closeGame()">← Назад</button>
+    <div style="text-align:center">Множитель: <span id="mines-mult" style="color:var(--accent)">1.00x</span></div>
+    <div class="mines-grid" id="mines-board"></div>
+    <button id="mines-btn" class="btn btn-primary" onclick="startMines()">НАЧАТЬ ИГРУ (0.1 TON)</button>
+</div>
 
-        function play(game) {
-            tg.HapticFeedback.impactOccurred('medium');
-            tg.showPopup({
-                title: game,
-                message: `Начать игру в ${game}? Ставка от 0.1 TON или 10 Stars`,
-                buttons: [{id: 'ok', type: 'default', text: 'Играть'}, {type: 'cancel'}]
-            });
+<script>
+    const tg = window.Telegram.WebApp;
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('user_id');
+    const API_URL = 'http://ТВОЙ_IP_СЕРВЕРА:8080'; // Замени на IP где запущен бот
+
+    let balance = { stars: 0, ton: 0 };
+
+    async function loadBalance() {
+        const r = await fetch(`${API_URL}/api/balance?user_id=${userId}`);
+        balance = await r.json();
+        document.getElementById('stars-val').innerText = balance.stars.toFixed(1);
+        document.getElementById('ton-val').innerText = balance.ton.toFixed(2);
+    }
+
+    async function saveBalance() {
+        await fetch(`${API_URL}/api/update`, {
+            method: 'POST',
+            body: JSON.stringify({ ...balance, user_id: userId })
+        });
+    }
+
+    function openGame(id) {
+        document.getElementById('main-menu').style.display = 'none';
+        document.getElementById('game-' + id).classList.add('game-active');
+    }
+
+    function closeGame() {
+        location.reload(); // Простой сброс состояний
+    }
+
+    // --- ЛОГИКА CRASH ---
+    let crashInterval;
+    function startCrash() {
+        if (balance.stars < 10) return alert("Мало Stars!");
+        balance.stars -= 10;
+        document.getElementById('crash-btn').disabled = true;
+        let m = 1.0;
+        let crashPoint = (Math.random() * 5 + 1).toFixed(2);
+        
+        crashInterval = setInterval(() => {
+            m += 0.01;
+            document.getElementById('crash-mult').innerText = m.toFixed(2) + 'x';
+            
+            if (m >= crashPoint) {
+                clearInterval(crashInterval);
+                document.getElementById('crash-mult').style.color = '#ff3366';
+                document.getElementById('crash-mult').innerText = 'BOOM!';
+                setTimeout(closeGame, 2000);
+            }
+        }, 50);
+        
+        document.getElementById('crash-btn').innerText = "ЗАБРАТЬ";
+        document.getElementById('crash-btn').onclick = () => {
+            clearInterval(crashInterval);
+            let win = 10 * m;
+            balance.stars += win;
+            alert("Выигрыш: " + win.toFixed(1));
+            saveBalance();
+            closeGame();
+        };
+        document.getElementById('crash-btn').disabled = false;
+    }
+
+    // --- ЛОГИКА MINES ---
+    let minesActive = false;
+    let bombs = [];
+    let currentMinesMult = 1.0;
+
+    function startMines() {
+        if (balance.ton < 0.1) return alert("Нужно 0.1 TON!");
+        balance.ton -= 0.1;
+        minesActive = true;
+        bombs = Array.from({length: 25}, (_, i) => i).sort(() => Math.random() - 0.5).slice(0, 5);
+        
+        const board = document.getElementById('mines-board');
+        board.innerHTML = '';
+        for (let i = 0; i < 25; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.onclick = () => clickCell(i, cell);
+            board.appendChild(cell);
         }
-    </script>
+        document.getElementById('mines-btn').innerText = "ЗАБРАТЬ ВЫИГРЫШ";
+        document.getElementById('mines-btn').onclick = cashoutMines;
+        saveBalance();
+    }
+
+    function clickCell(i, el) {
+        if (!minesActive || el.classList.contains('open')) return;
+        if (bombs.includes(i)) {
+            el.innerHTML = '💣'; el.classList.add('bomb');
+            minesActive = false;
+            alert("БОМБА! Вы проиграли.");
+            setTimeout(closeGame, 1000);
+        } else {
+            el.innerHTML = '💎'; el.classList.add('open');
+            currentMinesMult += 0.2;
+            document.getElementById('mines-mult').innerText = currentMinesMult.toFixed(2) + 'x';
+        }
+    }
+
+    function cashoutMines() {
+        let win = 0.1 * currentMinesMult;
+        balance.ton += win;
+        alert("Забрали: " + win.toFixed(2) + " TON");
+        saveBalance();
+        closeGame();
+    }
+
+    loadBalance();
+</script>
 </body>
 </html>
